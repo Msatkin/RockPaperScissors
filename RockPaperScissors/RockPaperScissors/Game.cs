@@ -8,7 +8,9 @@ namespace RockPaperScissors
 {
     class Game
     {
-        MyMath math = new MyMath();
+        Player playerOne;
+        Player playerTwo;
+        MyMath math;
         public void On()
         {
             bool exit = false;
@@ -19,152 +21,96 @@ namespace RockPaperScissors
                 switch(Console.ReadLine())
                 {
                     case "1":
-                        RunSinglePlayer();
+                        playerOne = new Human("Player One");
+                        playerTwo = new AI("Player Two");
+                        StartGame();
                         break;
 
                     case "2":
-                        RunTwoPlayer();
+                        playerOne = new Human("Player One");
+                        playerTwo = new Human("Player Two");
+                        StartGame();
                         break;
                 }
             }
         }
 
-        public void RunSinglePlayer()
+        public void StartGame()
         {
-            int playerScore = 0;
-            int AIScore = 0;
-            while (AIScore < 3 && playerScore < 3)
+            while(CheckIfWinnerExists())
             {
-                int player= GetPlayerChoice();
-                int AI= GetAIChoice();
-                int winner = CheckWinner(player, AI);
-                if (winner == 0)
+                playerOne.GetChoice();
+                playerTwo.GetChoice();
+                if (CheckTie())
                 {
-                    playerScore++;
-                    Console.Clear();
-                    string choiceOne = GetChoiceString(player);
-                    string choiceTwo = GetChoiceString(AI);
-                    Console.WriteLine("Player One chose {0}. The AI chose {1}", choiceOne, choiceTwo);
-                    Console.WriteLine("You won this round! Your score is now {0}", playerScore);
-                    Console.ReadLine();
+                    ShowTieMessage();
                 }
-                else if (winner == 1)
+                else if (!CheckPlayerOneWins())
                 {
-                    AIScore++;
-                    Console.Clear();
-                    string choiceOne = GetChoiceString(player);
-                    string choiceTwo = GetChoiceString(AI);
-                    Console.WriteLine("Player One chose {0}. The AI chose {1}", choiceOne, choiceTwo);
-                    Console.WriteLine("You LOSE this round! The AI's score is now {0}", AIScore);
-                    Console.ReadLine();
+                    playerTwo.score++;
+                    ShowRoundWinner(playerTwo);
                 }
                 else
                 {
-                    Console.Clear();
-                    string choiceOne = GetChoiceString(player);
-                    string choiceTwo = GetChoiceString(AI);
-                    Console.WriteLine("Player One chose {0} the AI also chose {1}", choiceOne, choiceTwo);
-                    Console.WriteLine("There is no winner.");
-                    Console.ReadLine();
+                    playerOne.score++;
+                    ShowRoundWinner(playerOne);
                 }
             }
-            if (playerScore == 3)
-            {
-                Console.Clear();
-                Console.WriteLine("You are the ULTIMATE winner!");
-                Console.ReadLine();
-            }
-            else
-            {
-                Console.Clear();
-                Console.WriteLine("You lose. Maybe try easy mode..");
-                Console.ReadLine();
-            }
-
+            ShowWinningMessage();
         }
 
-        public void RunTwoPlayer()
+        public void ShowTieMessage()
         {
-            int playerOneScore = 0;
-            int playerTwoScore = 0;
-            while (playerOneScore < 3 && playerTwoScore < 3)
-            {
-                int playerOne = GetPlayerChoice();
-                int playerTwo = GetPlayerChoice();
-                int winner = CheckWinner(playerOne, playerTwo);
-                if (winner == 0)
-                {
-                    playerOneScore++;
-                    Console.Clear();
-                    string choiceOne = GetChoiceString(playerOne);
-                    string choiceTwo = GetChoiceString(playerTwo);
-                    Console.WriteLine("Player One chose {0}. Player Two chose {1}", choiceOne, choiceTwo);
-                    Console.WriteLine("Player One wins this round! Player One's score is now {0}", playerOneScore);
-                    Console.ReadLine();
-                }
-                else if (winner == 1)
-                {
-                    playerTwoScore++;
-                    Console.Clear();
-                    string choiceOne = GetChoiceString(playerOne);
-                    string choiceTwo = GetChoiceString(playerTwo);
-                    Console.WriteLine("Player One chose {0}. Player Two chose {1}", choiceOne, choiceTwo);
-                    Console.WriteLine("Player Two wins this round! The Player Two's score is now {0}", playerTwoScore);
-                    Console.ReadLine();
-                }
-                else
-                {
-                    Console.Clear();
-                    string choiceOne = GetChoiceString(playerOne);
-                    string choiceTwo = GetChoiceString(playerTwo);
-                    Console.WriteLine("Player One chose {0}. Player Two also chose {1}", choiceOne, choiceTwo);
-                    Console.WriteLine("There is no winner.");
-                    Console.ReadLine();
-                }
-            }
-            if (playerOneScore == 3)
-            {
-                Console.Clear();
-                Console.WriteLine("Player One is the ULTIMATE winner! Player Two Loses.");
-                Console.ReadLine();
-            }
-            else
-            {
-                Console.Clear();
-                Console.WriteLine("Player Two is the ULTIMATE winner! Player One Loses.");
-                Console.ReadLine();
-            }
+            string choiceOne = GetChoiceString(playerOne.choice);
+            string choiceTwo = GetChoiceString(playerTwo.choice);
+            Console.WriteLine("Player One chose {0} Player Two also chose {1}", choiceOne, choiceTwo);
+            Console.WriteLine("There is no winner.");
+            Console.ReadLine();
         }
 
-        public int CheckWinner(int player, int AI)
+        public void ShowRoundWinner(Player winner)
         {
-            if ((player == 0 && AI == 3) || (player == 0 && AI == 2))
+            Console.Clear();
+            string choiceOne = GetChoiceString(playerOne.choice);
+            string choiceTwo = GetChoiceString(playerTwo.choice);
+            Console.WriteLine("Player One chose {0}. Player Two chose {1}", choiceOne, choiceTwo);
+            Console.WriteLine("{0} wins this round! {0}'s score is now {1}",winner.name, winner.score);
+            Console.ReadLine();
+        }
+
+        public void ShowWinningMessage()
+        {
+            if (playerOne.score < 2)
             {
-                return 0;
-            }
-            else if ((player == 1 && AI == 0) || (player == 1 && AI == 4))
-            {
-                return 0;
-            }
-            else if ((player == 2 && AI == 3) || (player == 2 && AI == 1))
-            {
-                return 0;
-            }
-            else if ((player == 3 && AI == 1) || (player == 3 && AI == 4))
-            {
-                return 0;
-            }
-            else if ((player == 4 && AI == 0) || (player == 4 && AI == 2))
-            {
-                return 0;
-            }
-            else if ((player == 0 && AI == 0) || (player == 1 && AI == 1) || (player == 2 && AI == 2) || (player == 3 && AI == 3) || (player == 4 && AI == 4))
-            {
-                return 2;
+                Console.WriteLine("Player Two Wins!");
             }
             else
             {
-                return 1;
+                Console.WriteLine("Player One Wins!");
+            }
+            Console.ReadLine();
+        }
+
+        public bool CheckIfWinnerExists()
+        {
+                return (playerOne.score < 2 && playerTwo.score < 2);
+        }
+
+        public bool CheckTie()
+        {
+            return (playerOne.choice == playerTwo.choice);
+        }
+
+        public bool CheckPlayerOneWins()
+        {
+            int winner = ((5 + playerOne.choice - playerTwo.choice) % 5);
+            if (winner % 2 == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -182,47 +128,12 @@ namespace RockPaperScissors
                     return "Scissors";
 
                 case 3:
-                    return "Lizard";
+                    return "Spock";
 
                 case 4:
-                    return "Spock";
+                    return "Lizard";
             }
             return "Null";
-        }
-
-        public int GetPlayerChoice()
-        {
-            bool choiceMade = false;
-            while (!choiceMade)
-            {
-                Console.Clear();
-                Console.WriteLine("Choices are Rock, Paper, Scissors, Lizard, and Spock");
-                Console.Write("Make your choice:");
-
-                switch (Console.ReadLine())
-                {
-                    case "Rock":
-                        return 0;
-
-                    case "Paper":
-                        return 1;
-
-                    case "Scissors":
-                        return 2;
-
-                    case "Lizard":
-                        return 3;
-
-                    case "Spock":
-                        return 4;
-                }
-            }
-            return 5;
-        }
-
-        public int GetAIChoice()
-        {
-            return math.GetRandomInt(0, 4);
         }
     }
 }
